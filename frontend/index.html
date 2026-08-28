@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>No Idea - MVP Requirements AI</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                N
+            </div>
+
+            <div>
+                <h2>No Idea</h2>
+                <p>MVP Requirements AI</p>
+            </div>
+
+        </div>
+
+
+        <button class="new-chat" onclick="newConversation()">
+            <span>＋</span>
+            New Idea
+        </button>
+
+
+        <div class="section-title">
+            WORKSPACE
+        </div>
+
+
+        <div class="workspace-item active">
+            <span>💡</span>
+            Current Idea
+        </div>
+
+
+        <div class="sidebar-footer">
+
+            <div class="local-status">
+                <span class="online-dot"></span>
+
+                <div>
+                    <strong>Local AI</strong>
+                    <small>Ollama · Qwen3:8b</small>
+                </div>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- HEADER -->
+        <header class="header">
+
+            <div class="header-left">
+
+                <div class="ai-avatar">
+                    ✦
+                </div>
+
+                <div>
+                    <h3>MVP Requirements Assistant</h3>
+
+                    <div class="connection">
+                        <span></span>
+                        Connected to local AI
+                    </div>
+                </div>
+
+            </div>
+
+
+            <button class="clear-btn" onclick="clearConversation()">
+                Clear
+            </button>
+
+        </header>
+
+        <div class="progress-panel" aria-label="Requirements interview progress">
+            <div class="progress-label">
+                <span>Requirements progress</span>
+                <strong id="progressPercent">0%</strong>
+            </div>
+            <div class="progress-track">
+                <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+
+        <!-- CHAT -->
+        <section class="chat-section">
+
+            <div id="chatBox" class="chat-box">
+
+                <!-- Welcome screen -->
+
+                <div id="welcome" class="welcome">
+
+                    <div class="welcome-logo">
+                        ✦
+                    </div>
+
+                    <h1>Hey! Welcome to No Idea.</h1>
+
+                    <p>
+                        Tell me your idea and we will shape it into an MVP.
+                    </p>
+
+
+                    <div class="idea-cards">
+
+                        <button onclick="startExample(
+                            'I want to build a college attendance management system.'
+                        )">
+
+                            <span>🎓</span>
+
+                            <div>
+                                <strong>College System</strong>
+                                <small>Attendance management</small>
+                            </div>
+
+                        </button>
+
+
+                        <button onclick="startExample(
+                            'I want to build an online food delivery application.'
+                        )">
+
+                            <span>🍔</span>
+
+                            <div>
+                                <strong>Food Delivery</strong>
+                                <small>Ordering platform</small>
+                            </div>
+
+                        </button>
+
+
+                        <button onclick="startExample(
+                            'I want to build a healthcare appointment application.'
+                        )">
+
+                            <span>🏥</span>
+
+                            <div>
+                                <strong>Healthcare</strong>
+                                <small>Appointment management</small>
+                            </div>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- INPUT -->
+
+            <div class="input-container">
+
+                <div class="input-box">
+
+                    <textarea
+                        id="messageInput"
+                        placeholder="Describe your idea..."
+                        rows="1"
+                        onkeydown="handleKey(event)"
+                    ></textarea>
+
+
+                    <button
+                        id="sendButton"
+                        onclick="sendMessage()"
+                    >
+                        ↑
+                    </button>
+
+                </div>
+
+
+                <div class="input-footer">
+
+                   
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
