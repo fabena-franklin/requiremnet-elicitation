@@ -1,3 +1,4 @@
+import re
 from typing import Dict, List, Optional
 from uuid import uuid4
 
@@ -43,100 +44,30 @@ FORMATTING:
 - Plain text only during the interview. Keep each response under 80 words unless generating the final specification.
 
 WHEN REQUIREMENTS ARE SUFFICIENTLY DISCOVERED:
-Generate this exact report format. Extract every useful requirement from the entire conversation. Do not summarize away details. Base it only on the user's answers. Mark unknown details as "Not specified"; never guess or invent requirements.
-The final response must be the complete report below, not another question or a shortened summary.
+Generate a short requirement elicitation list using compact bullet points only.
+Do not use decorative report headers, big title blocks, tables, or long narrative sections.
+Only include relevant requirement elicitation points derived from the conversation.
+Remove filler words, stopwords, and repeated phrases.
+Keep each bullet short, technical, and actionable.
+Use this structure:
+- User need: [core problem or need]
+- Problem: [pain or constraint]
+- Target users: [who is affected]
+- Core functionality: [main capabilities]
+- Inputs: [data or user actions]
+- Outputs: [result or response]
+- Constraints: [rules, safety, privacy, accessibility, limits]
+- Functional requirements: [core capabilities]
+- Non-functional requirements: [reliability, speed, privacy, accessibility]
+- Success criteria: [measurable outcomes]
 
-===============================================
-         NO IDEA - MVP REQUIREMENTS SPECIFICATION
-===============================================
-
-Product summary: [one sentence]
-Primary user: [user]
-Problem: [specific problem]
-Domain: [business or product domain]
-MVP goal: [what the first version must achieve]
-
------------------------------------------------
-               MVP SCOPE
------------------------------------------------
-
-MVP outcome: [single measurable outcome]
-In scope:
-1. [capability included in the MVP]
-2. [capability included in the MVP]
-3. [capability included in the MVP]
-
-Primary user journeys:
-1. [actor, trigger, steps, and expected result]
-2. [actor, trigger, steps, and expected result]
-
-Must-have features:
-1. [feature, user, purpose, and expected behavior]
-2. [feature, user, purpose, and expected behavior]
-3. [feature, user, purpose, and expected behavior]
-
-Out of scope for MVP:
-1. [deferred feature or explicit limitation]
-
------------------------------------------------
-                     FUNCTIONAL REQUIREMENTS
------------------------------------------------
-
-1. [The system shall ...]
-2. [The system shall ...]
-3. [The system shall ...]
-4. [The system shall ...]
-5. [The system shall ...]
-6. [The system shall ...]
-
-User roles and permissions:
-- [role]: [allowed actions]
-Data and inputs:
-- [data item]: [who provides it, format, and purpose]
-Outputs and results:
-- [output]: [who receives it and when]
-Business rules:
-1. [rule or condition]
-2. [rule or condition]
-Integrations and constraints: [details]
-
------------------------------------------------
-          ACCEPTANCE CRITERIA
------------------------------------------------
-
-1. Given [context], when [action], then [observable result].
-2. Given [context], when [action], then [observable result].
-3. Given [context], when [action], then [observable result].
-4. Given [context], when [action], then [observable result].
-
-Error and edge cases:
-1. [failure or unusual situation and expected response]
-2. [failure or unusual situation and expected response]
-Non-functional requirements: [security, privacy, speed, accessibility, reliability, or other quality needs]
-Success metrics: [metrics and targets]
-Risks and open questions: [gaps from the user's answers]
-Timeline and resources: [details]
-
-Requirement traceability: [important requirement followed by the user's supporting detail]
-
------------------------------------------------
-              BUILD PRIORITY
------------------------------------------------
-
-Priority: [Ready to build / Needs clarification]
-Next three actions:
-1. [action]
-2. [action]
-3. [action]
-
-===============================================
-
-After generating the specification, do not ask more questions."""
+Do not include a report title, separators, or section banners.
+Do not ask more questions after generating the final list."""
 
 app = FastAPI(title="Requirements Chatbot API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500", "null"],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["POST"],
     allow_headers=["*"],
@@ -165,6 +96,118 @@ FINALIZE_INPUTS = {
     "generate requirements", "give me the requirements",
     "create the requirements specification",
 }
+
+STOPWORDS = {
+    "the", "a", "an", "and", "or", "of", "for", "to", "in", "on", "with",
+    "at", "by", "as", "is", "are", "was", "were", "be", "been", "being",
+    "this", "that", "these", "those", "from", "into", "it", "its", "their",
+    "there", "your", "you", "we", "our", "us", "they", "them", "his", "her",
+    "he", "she", "has", "have", "had", "do", "does", "did", "not", "no",
+    "yes", "if", "then", "when", "while", "about", "after", "before", "through",
+    "within", "without", "over", "under", "between", "among", "such", "more",
+    "most", "also", "just", "can", "could", "would", "should", "will", "may",
+    "must", "need", "needs", "needed", "only", "like", "using", "used", "make",
+    "makes", "made", "allow", "allows", "allowed", "choose", "selected",
+}
+
+SECTION_PREFIXES = (
+    "Product summary",
+    "Primary user",
+    "Problem",
+    "Domain",
+    "MVP goal",
+    "MVP outcome",
+    "In scope",
+    "Primary user journeys",
+    "Must-have features",
+    "Out of scope",
+    "Functional requirements",
+    "User roles and permissions",
+    "Data and inputs",
+    "Outputs and results",
+    "Business rules",
+    "Acceptance criteria",
+    "Error and edge cases",
+    "Non-functional requirements",
+    "Success metrics",
+    "Risks and open questions",
+    "Timeline and resources",
+    "Requirement traceability",
+    "Build priority",
+    "Priority",
+    "Next three actions",
+)
+
+
+def _clean_line(line: str) -> str:
+    cleaned = line.strip()
+    cleaned = re.sub(r"^[-*]\\s*", "", cleaned)
+    cleaned = re.sub(r"^\\d+\\.\\s*", "", cleaned)
+    cleaned = re.sub(r"^#+\s*", "", cleaned)
+    cleaned = re.sub(r"^===+$|^---+$", "", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if not cleaned:
+        return ""
+    return cleaned
+
+
+def _strip_stopwords(text: str) -> str:
+    words = [word for word in re.split(r"\s+", text) if word.strip()]
+    filtered = [word for word in words if word.lower() not in STOPWORDS]
+    if not filtered:
+        return text.strip()
+    return " ".join(filtered)
+
+
+def sanitize_final_spec(answer: str) -> str:
+    text = answer.strip()
+    text = re.sub(r"```(?:json|text)?\n?", "", text)
+    text = re.sub(r"```", "", text)
+
+    cleaned_lines: List[str] = []
+    for raw_line in text.splitlines():
+        line = _clean_line(raw_line)
+        if not line or line in {"===============================================", "-----------------------------------------------"}:
+            continue
+
+        lowered = line.lower()
+        matched_prefix = next(
+            (prefix for prefix in SECTION_PREFIXES if lowered.startswith(prefix.lower() + ":")),
+            None,
+        )
+        if matched_prefix:
+            content = line.split(":", 1)[1].strip()
+            if content:
+                cleaned_lines.append(f"- {content}")
+            continue
+
+        if ":" in line and not line.lower().startswith("http"):
+            label, value = line.split(":", 1)
+            label = label.strip()
+            value = value.strip()
+            if label and value and label.lower() not in {"note", "summary"}:
+                cleaned_lines.append(f"- {value}")
+                continue
+
+        if line.lower().startswith("no idea") or line.lower().startswith("================================"):
+            continue
+
+        cleaned_lines.append(f"- {_strip_stopwords(line)}")
+
+    bullet_lines = []
+    for item in cleaned_lines:
+        text_item = item.strip()
+        if not text_item:
+            continue
+        if text_item.startswith("-"):
+            value = text_item[1:].strip()
+        else:
+            value = text_item
+        if value:
+            bullet_lines.append(f"- {_strip_stopwords(value)}")
+
+    result = "\n".join(bullet_lines)
+    return result.strip()
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -217,6 +260,8 @@ def chat(request: ChatRequest) -> ChatResponse:
             )
             response.raise_for_status()
             answer = response.json()["message"]["content"].replace("/no_think", "").strip()
+            if is_finalize_request:
+                answer = sanitize_final_spec(answer)
 
         if not answer:
             raise ValueError("Ollama returned an empty response")
