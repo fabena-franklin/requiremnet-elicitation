@@ -1,4 +1,26 @@
-from backend import sanitize_final_spec
+from backend import is_false_off_topic_response, is_instruction_echo, sanitize_final_spec
+
+
+def test_is_instruction_echo_detects_leaked_internal_rules():
+    answer = (
+        "Acknowledge one concrete detail from the previous answer. "
+        "Maintain an internal requirements map and do not ask for information already provided."
+    )
+
+    assert is_instruction_echo(answer)
+
+
+def test_is_instruction_echo_allows_normal_interview_response():
+    assert not is_instruction_echo("Who is the main user of this application?")
+
+
+def test_laptop_idea_is_not_rejected_as_off_topic():
+    answer = (
+        "I am focused on turning your idea into an MVP requirements specification. "
+        "Please share your idea or answer the current question."
+    )
+
+    assert is_false_off_topic_response(answer, "I need to build a laptop")
 
 
 def test_sanitize_final_spec_removes_headers_and_filler_words():
