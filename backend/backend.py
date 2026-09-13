@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from tok.response_processor import get_last_bot_response
-from tok.response_processor import is_final_requirement_specification
+from tok.final_response_extract import extract_final_requirement_specification 
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL = "qwen3:8b"
@@ -338,9 +338,10 @@ def chat(request: ChatRequest) -> ChatResponse:
     print(last_response)
     print("=======================================\n")
 
-    if is_final_requirement_specification(answer):
+    final_spec = extract_final_requirement_specification(history)
+    if final_spec:
         print("\n========== FINAL REQUIREMENT SPECIFICATION ==========")
-        print(last_response)
+        print(final_spec)
         print("=====================================================\n")
     is_report = "NO IDEA - MVP REQUIREMENTS SPECIFICATION" in answer
     answered_questions = sum(
