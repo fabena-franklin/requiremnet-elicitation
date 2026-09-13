@@ -6,6 +6,8 @@ import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from tok.response_processor import get_last_bot_response
+from tok.response_processor import is_final_requirement_specification
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL = "qwen3:8b"
@@ -299,6 +301,15 @@ def chat(request: ChatRequest) -> ChatResponse:
             )
             response.raise_for_status()
             answer = response.json()["message"]["content"].replace("/no_think", "").strip()
+            last_response = get_last_bot_response(
+                history + [
+                    {"role": "assistant", "content": answer}
+                ]
+            )
+
+            print("LAST BOT RESPONSE:")
+            print(last_response)
+            
             if is_finalize_request:
                 answer = sanitize_final_spec(answer)
 
@@ -322,6 +333,15 @@ def chat(request: ChatRequest) -> ChatResponse:
         ) from error
 
     history.append({"role": "assistant", "content": answer})
+    last_response = get_last_bot_response(history)
+    print("\n========== LAST BOT RESPONSE ==========")
+    print(last_response)
+    print("=======================================\n")
+
+    if is_final_requirement_specification(answer):
+        print("\n========== FINAL REQUIREMENT SPECIFICATION ==========")
+        print(last_response)
+        print("=====================================================\n")
     is_report = "NO IDEA - MVP REQUIREMENTS SPECIFICATION" in answer
     answered_questions = sum(
         item["role"] == "user" and item["content"].lower() not in GREETING_INPUTS
