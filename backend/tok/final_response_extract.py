@@ -1,11 +1,7 @@
 def extract_final_requirement_specification(messages):
     """
-    Extract the final Requirements Specification from
-    the conversation history.
-
-    Searches from the newest message backwards and
-    returns the latest assistant message that contains
-    the complete requirements specification.
+    Extract the latest complete requirement specification
+    from the chatbot conversation.
     """
 
     required_sections = [
@@ -13,14 +9,13 @@ def extract_final_requirement_specification(messages):
         "Problem:",
         "Target users:",
         "Core functionality:",
-        "Inputs:",
-        "Outputs:",
-        "Constraints:",
-        "Functional requirements:",
-        "Non-functional requirements:",
-        "Success criteria:",
+        "Core resources:",
+        "Core constraints:",
+        "Core interactions:",
+        "Core outcomes:",
     ]
 
+    # Search from the END of the conversation
     for message in reversed(messages):
 
         if message.get("role") != "assistant":
@@ -33,12 +28,13 @@ def extract_final_requirement_specification(messages):
 
         response_lower = response.lower()
 
+        # Count how many requirement sections exist
         matched_sections = sum(
             section.lower() in response_lower
             for section in required_sections
         )
 
-        # A final specification should contain most sections
+        # Your final specification contains all 8 sections
         if matched_sections >= 7:
             return response
 
