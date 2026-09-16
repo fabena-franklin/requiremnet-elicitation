@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ai.response_processor import get_last_bot_response
 from ai.final_response_extract import extract_final_requirement_specification 
+from ai.pipeline import process_final_requirement
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL = "qwen3:8b"
@@ -333,6 +334,7 @@ def chat(request: ChatRequest) -> ChatResponse:
         ) from error
 
     history.append({"role": "assistant", "content": answer})
+    process_final_requirement(answer)
     last_response = get_last_bot_response(history)
     print("\n========== LAST BOT RESPONSE ==========")
     print(last_response)
