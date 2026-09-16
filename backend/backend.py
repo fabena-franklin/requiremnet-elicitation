@@ -6,8 +6,8 @@ import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from tok.response_processor import get_last_bot_response
-from tok.final_response_extract import extract_final_requirement_specification 
+from ai.response_processor import get_last_bot_response
+from ai.final_response_extract import extract_final_requirement_specification 
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL = "qwen3:8b"
