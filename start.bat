@@ -9,7 +9,7 @@ timeout /t 3 /nobreak >nul
 echo Starting FastAPI backend...
 cd /d "%~dp0backend"
 
-start "" cmd /k "python -m uvicorn backend:app --host 127.0.0.1 --port 8000 --reload"
+start "" cmd /k "py -m uvicorn backend:app --host 127.0.0.1 --port 8001 --reload"
 
 timeout /t 3 /nobreak >nul
 
@@ -18,7 +18,7 @@ start "" "%~dp0frontend\index.html"
 
 echo.
 echo No Idea is running!
-echo Backend: http://127.0.0.1:8000
-echo API docs: http://127.0.0.1:8000/docs
+echo Backend: http://127.0.0.1:8001
+echo API docs: http://127.0.0.1:8001/docs
 echo.
 pause
